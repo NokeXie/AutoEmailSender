@@ -5,10 +5,6 @@ using System.Net.Mail;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Threading;
-using System.Collections;
-using System.Data.Common;
-using System.Data;
-using System.Windows;
 
 namespace AutoEmailSender
 {
@@ -27,10 +23,11 @@ namespace AutoEmailSender
         static bool enableSsl = Convert.ToBoolean(ConfigurationManager.AppSettings["EnableSsl"]);
         static bool enbaleSend = false;
         static void Main(string[] args)
+       
         {
             
             TimeSpan timeUntilNext14pm = GetNextOccurrence(new TimeSpan(14, 0, 0));
-            TimeSpan timeUntilNext16pm = GetNextOccurrence(new TimeSpan(16, 00, 0));
+            TimeSpan timeUntilNext16pm = GetNextOccurrence(new TimeSpan(16, 0, 0));
             SetTimerForNextTask(timeUntilNext14pm, TaskAt14pm);
             SetTimerForNextTask(timeUntilNext16pm, TaskAt16pm);
      
@@ -38,6 +35,7 @@ namespace AutoEmailSender
             Console.WriteLine("按Enter键结束...");
             Console.ReadLine();
         }
+        
         private static void TaskAt14pm()
         {
 
@@ -98,10 +96,11 @@ namespace AutoEmailSender
             }
             
         }
+        
         private static void SetTimerForNextTask(TimeSpan timeUntilNextTask, Action task)
         {
             // 创建定时器，并设置触发时间
-            System.Threading.Timer timer = new System.Threading.Timer(OnTimedEvent, task, timeUntilNextTask, Timeout.InfiniteTimeSpan);
+            Timer timer = new Timer(OnTimedEvent, task, timeUntilNextTask, Timeout.InfiniteTimeSpan);
         }
 
         private static void OnTimedEvent(object state)
@@ -124,14 +123,13 @@ namespace AutoEmailSender
             DateTime nextOccurrence = todayTargetTime > now ? todayTargetTime : todayTargetTime.AddDays(1);//如果已经过了指定时间，就等于明天定时的小时时间
             return nextOccurrence - now;
         }
+        
         private static List<string> GetFilesFromNetworkShare(string networkSharePath, string fileExtension, string fileNamePrefix)
         {
             List<string> filesToSend = new List<string>();
-
             try
             {
                 Console.WriteLine($"正在从网络共享路径 '{networkSharePath}' 获取以'{fileNamePrefix}'开头且创建于当天的{fileExtension}文件...");
-
                 string[] files = Directory.GetFiles(networkSharePath, "*" + fileExtension);
                 DateTime today = DateTime.Today;
 
@@ -144,7 +142,6 @@ namespace AutoEmailSender
                         filesToSend.Add(file);
                     }
                 }
-
                 Console.WriteLine($"找到 {filesToSend.Count} 个符合条件的{fileExtension}文件:");
             }
             catch (Exception ex)
@@ -162,18 +159,13 @@ namespace AutoEmailSender
                 Console.WriteLine("没有找到符合条件的文件，不会发送邮件。");
                 return;
             }
-
             DateTime today = DateTime.Today;
             DayOfWeek dayOfWeek = today.DayOfWeek;
-
             if (dayOfWeek == DayOfWeek.Sunday)
             {
                 Console.WriteLine("今天是周六或周日，不会发送邮件。");
                 return;
             }
-
-
-
             try
             {
                 using (MailMessage mail = new MailMessage())
@@ -187,13 +179,11 @@ namespace AutoEmailSender
                     {
                         mail.Attachments.Add(new Attachment(file));
                     }
-
                     using (SmtpClient smtp = new SmtpClient(smtpServer, smtpPort)) // 请根据你的邮箱服务提供商设置SMTP服务器地址和端口
                     {
                         smtp.Credentials = new NetworkCredential(fromEmail, fromEmailPassword);
                         smtp.EnableSsl = enableSsl; // 如果需要，请启用SSL
                         smtp.Send(mail);
-
                         Console.WriteLine("邮件已成功发送！");
                     }
                 }
@@ -203,10 +193,9 @@ namespace AutoEmailSender
                 Console.WriteLine($"发送邮件时出错: {ex.Message}");
             }
         }
+        
         private static void SendReminderEmail(string fromEmail, string fromEmailPassword, string toEmail, string smtpServer, int smtpPort, bool enableSsl, int startTime)
         {
-
-
             try
             {
                 using (MailMessage mail = new MailMessage())
@@ -215,8 +204,6 @@ namespace AutoEmailSender
                     mail.To.Add(toEmail);
                     mail.Subject = "FMD提醒";
                     mail.Body = "今天下午" + startTime.ToString() + "点没有找到符合条件的FMD文件，请注意。";
-
-
                     using (SmtpClient smtp = new SmtpClient(smtpServer, smtpPort)) // 请根据你的邮箱服务提供商设置SMTP服务器地址和端口
                     {
                         smtp.Credentials = new NetworkCredential(fromEmail, fromEmailPassword);
@@ -233,5 +220,4 @@ namespace AutoEmailSender
             }
         }
     }
-
 }
