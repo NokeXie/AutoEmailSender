@@ -26,7 +26,7 @@ namespace AutoEmailSender
         static async Task Main(string[] args)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Title = "FMD邮件自动推送程序";
+            Console.Title = "FMD邮件自动推送";
             var task1 = ScheduleTask(new TimeSpan(14, 10, 0), TaskAt14pm, "TaskAt14pm");
             var task2 = ScheduleTask(new TimeSpan(16, 0, 0), TaskAt16pm, "TaskAt16pm");
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}  FMD邮件自动发送任务已启用");
